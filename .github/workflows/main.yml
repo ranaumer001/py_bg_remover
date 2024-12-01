@@ -1,4 +1,4 @@
-name: Flask CI
+name: PY_BG_REMOVER
 
 on:
   push:
