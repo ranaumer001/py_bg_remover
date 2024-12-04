@@ -7,11 +7,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5100:5100"
-
-    volumes:
-      - ./logs:/app/logs     
-      - ./uploads:/app/uploads  
-
+    env_file:
+      - .env
     networks:
       - app-network
 
