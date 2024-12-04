@@ -9,10 +9,12 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      AWS_REGION: us-east-1
-      ECR_REPO_NAME: flask-app
-      ECS_CLUSTER: my-cluster
-      ECS_SERVICE: my-service
+      # AWS_REGION: us-east-1
+      # ECR_REPO_NAME: flask-app
+      # ECS_CLUSTER: my-cluster
+      # ECS_SERVICE: my-service
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      REMOVE_BG_API_KEY: ${{ secrets.REMOVE_BG_API_KEY }}
 
     steps:
       - name: Checkout code
@@ -30,16 +32,16 @@ jobs:
           docker build --build-arg SECRET_KEY=${{ secrets.SECRET_KEY }} --build-arg REMOVE_BG_API_KEY=${{ secrets.REMOVE_BG_API_KEY }} -t $ECR_REPO_NAME .
           docker tag $ECR_REPO_NAME:latest ${{ steps.ecr-login.outputs.registry }}/$ECR_REPO_NAME:latest
 
-      - name: Push Docker Image to ECR
-        run: docker push ${{ steps.ecr-login.outputs.registry }}/$ECR_REPO_NAME:latest
+      # - name: Push Docker Image to ECR
+      #   run: docker push ${{ steps.ecr-login.outputs.registry }}/$ECR_REPO_NAME:latest
 
-      - name: Deploy to Amazon ECS
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-        with:
-          cluster: ${{ env.ECS_CLUSTER }}
-          service: ${{ env.ECS_SERVICE }}
-          image: ${{ steps.ecr-login.outputs.registry }}/$ECR_REPO_NAME:latest
-          aws-region: ${{ env.AWS_REGION }}
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      # - name: Deploy to Amazon ECS
+      #   uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      #   with:
+      #     cluster: ${{ env.ECS_CLUSTER }}
+      #     service: ${{ env.ECS_SERVICE }}
+      #     image: ${{ steps.ecr-login.outputs.registry }}/$ECR_REPO_NAME:latest
+      #     aws-region: ${{ env.AWS_REGION }}
+      #   env:
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
