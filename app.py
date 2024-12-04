@@ -3,16 +3,19 @@ import requests
 from io import BytesIO
 import os
 import logging
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+app.secret_key = os.getenv('SECRET_KEY', 'default_secret_key')
 logging.basicConfig(level=logging.INFO)
 
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10 MB
 
 PIC_EXTENSIONS_ALLOWED = {'png', 'jpg', 'jpeg'}
 
-REMOVE_BG_API_KEY = "bWcHUxjg5G5TVazF4Hg5FfKt"
+REMOVE_BG_API_KEY = os.getenv("REMOVE_BG_API_KEY")
 REMOVE_BG_API_URL = "https://api.remove.bg/v1.0/removebg"
 
 def file_allowed(filename):
