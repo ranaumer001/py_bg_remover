@@ -1,46 +1,53 @@
-name: CI/CD Pipeline
+name: Threat mon Deployment 
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
-  build_and_deploy:
+  deployment:
+    timeout-minutes: 120
     runs-on: ubuntu-latest
 
-    env:
-      # AWS_REGION: us-east-1
-      # ECR_REPO_NAME: flask-app
-      # ECS_CLUSTER: my-cluster
-      # ECS_SERVICE: my-service
-      SECRET_KEY: klejnfoiq
-      REMOVE_BG_API_KEY: bWcHUxjg5G5TVazF4Hg5FfKt
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v2
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
 
-      # - name: Log in to Amazon ECR
-      #   id: ecr-login
-      #   uses: aws-actions/amazon-ecr-login@v1
-
-      - name: Build and Tag Docker Image
+      - name: Setup SSH key for authentication
         run: |
-          docker build --build-arg klejnfoiq --build-arg bWcHUxjg5G5TVazF4Hg5FfKt -t flask_app .
+          mkdir -p ~/.ssh
+          echo "umer.pem" > ~/.ssh/id_rsa
+          cp /umer.pem ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
 
-      # - name: Push Docker Image to ECR
-      #   run: docker push ${{ steps.ecr-login.outputs.registry }}/$ECR_REPO_NAME:latest
+      - name: Add VM to known_hosts
+        run: |
+          ssh-keyscan -H ubuntu@13.60.83.34 >> ~/.ssh/known_hosts
 
-      # - name: Deploy to Amazon ECS
-      #   uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-      #   with:
-      #     cluster: ${{ env.ECS_CLUSTER }}
-      #     service: ${{ env.ECS_SERVICE }}
-      #     image: ${{ steps.ecr-login.outputs.registry }}/$ECR_REPO_NAME:latest
-      #     aws-region: ${{ env.AWS_REGION }}
-      #   env:
-      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: Synchronize Code with VM Using rsync and SSH key
+        run: |
+          rsync -avz --exclude='.git' --exclude='.env' --exclude='data' \
+          --no-perms --omit-dir-times --no-group \
+          -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" ./ ubuntu:/home/py_bg_remover
+
+      - name: Restart Docker Compose Services
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ubuntu@13.60.83.34
+          username: ubuntu
+          key: /umer.pem
+          script: |
+            echo "Stopping existing Docker Compose services..."
+            cd /home/py_bg_remover
+            echo "/umer.pem" | sudo -S docker-compose down
+            echo "Starting Docker Compose services..."
+            echo "Enabling Docker BuildKit..."
+            export DOCKER_BUILDKIT=1  
+            echo "Starting Docker Compose services..."
+            echo /umer.pem | sudo -S docker-compose build 
+            echo /umer.pem | sudo -S docker-compose up -d
+            echo "Successfully deployed the application!"
