@@ -27,10 +27,10 @@ jobs:
         run: |
           ssh-keyscan -H 13.60.83.34 >> ~/.ssh/known_hosts
 
-      - name: Create Directory on VM
+      - name: Ensure Directory Permissions on VM
         run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@13.60.83.34 "sudo mkdir -p /home/py_bg_remover"
-      
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@13.60.83.34 "sudo mkdir -p /home/py_bg_remover && sudo chown -R ubuntu:ubuntu /home/py_bg_remover && sudo chmod -R 755 /home/py_bg_remover"
+
       - name: Synchronize Code with VM Using rsync and SSH key
         run: |
           rsync -avz --exclude='.git' --exclude='.env' --exclude='data' \
