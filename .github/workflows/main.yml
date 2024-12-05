@@ -41,7 +41,7 @@ jobs:
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: 13.60.83.34
-          username: ubuntu
+          username: ubuntu@13.60.83.34
           key: ./umer.pem
           script: |
             echo "Stopping existing Docker Compose services..."
