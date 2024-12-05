@@ -1,4 +1,4 @@
-name: Threat mon Deployment 
+name: Threat Mon Deployment
 
 on:
   push:
@@ -20,7 +20,6 @@ jobs:
       - name: Setup SSH key for authentication
         run: |
           mkdir -p ~/.ssh
-          echo "./umer.pem" > ~/.ssh/id_rsa
           cp ./umer.pem ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
@@ -28,11 +27,15 @@ jobs:
         run: |
           ssh-keyscan -H 13.60.83.34 >> ~/.ssh/known_hosts
 
+      - name: Create Directory on VM
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@13.60.83.34 "sudo mkdir -p /home/py_bg_remover"
+      
       - name: Synchronize Code with VM Using rsync and SSH key
         run: |
           rsync -avz --exclude='.git' --exclude='.env' --exclude='data' \
-          --no-perms --omit-dir-times --no-group \
-          -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" ./ ubuntu@13.60.83.34:sudo /bin/mkdir -p /home/py_bg_remover
+            --no-perms --omit-dir-times --no-group \
+            -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" ./ ubuntu@13.60.83.34:/home/py_bg_remover
 
       - name: Restart Docker Compose Services
         uses: appleboy/ssh-action@v0.1.6
@@ -43,11 +46,10 @@ jobs:
           script: |
             echo "Stopping existing Docker Compose services..."
             cd /home/py_bg_remover
-            echo "./umer.pem" | sudo -S docker-compose down
+            sudo docker-compose down
             echo "Starting Docker Compose services..."
             echo "Enabling Docker BuildKit..."
-            export DOCKER_BUILDKIT=1  
-            echo "Starting Docker Compose services..."
-            echo ./umer.pem | sudo -S docker-compose build 
-            echo ./umer.pem | sudo -S docker-compose up -d
+            export DOCKER_BUILDKIT=1
+            sudo docker-compose build
+            sudo docker-compose up -d
             echo "Successfully deployed the application!"
