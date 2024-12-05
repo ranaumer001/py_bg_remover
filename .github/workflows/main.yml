@@ -41,8 +41,8 @@ jobs:
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: 13.60.83.34
-          username: ubuntu@13.60.83.34
-          key: ./umer.pem
+          username: ubuntu
+          key: ${{ secrets.UMER_PEM }}
           script: |
             echo "Stopping existing Docker Compose services..."
             cd /home/py_bg_remover
