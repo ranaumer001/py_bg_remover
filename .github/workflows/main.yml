@@ -20,8 +20,8 @@ jobs:
       - name: Setup SSH key for authentication
         run: |
           mkdir -p ~/.ssh
-          echo "umer.pem" > ~/.ssh/id_rsa
-          cp /umer.pem ~/.ssh/id_rsa
+          echo "./umer.pem" > ~/.ssh/id_rsa
+          cp ./umer.pem ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
       - name: Add VM to known_hosts
@@ -39,15 +39,15 @@ jobs:
         with:
           host: ubuntu@13.60.83.34
           username: ubuntu
-          key: /umer.pem
+          key: ./umer.pem
           script: |
             echo "Stopping existing Docker Compose services..."
             cd /home/py_bg_remover
-            echo "/umer.pem" | sudo -S docker-compose down
+            echo "./umer.pem" | sudo -S docker-compose down
             echo "Starting Docker Compose services..."
             echo "Enabling Docker BuildKit..."
             export DOCKER_BUILDKIT=1  
             echo "Starting Docker Compose services..."
-            echo /umer.pem | sudo -S docker-compose build 
-            echo /umer.pem | sudo -S docker-compose up -d
+            echo ./umer.pem | sudo -S docker-compose build 
+            echo ./umer.pem | sudo -S docker-compose up -d
             echo "Successfully deployed the application!"
