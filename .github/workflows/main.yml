@@ -32,7 +32,7 @@ jobs:
         run: |
           rsync -avz --exclude='.git' --exclude='.env' --exclude='data' \
           --no-perms --omit-dir-times --no-group \
-          -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" ./ ubuntu@13.60.83.34:/home/py_bg_remover
+          -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" ./ ubuntu@13.60.83.34:sudo /bin/mkdir -p /home/py_bg_remover
 
       - name: Restart Docker Compose Services
         uses: appleboy/ssh-action@v0.1.6
